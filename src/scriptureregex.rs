@@ -15,6 +15,28 @@ fn create_group(addition: String) -> Box<dyn Fn(Vec<String>) -> String> {
     })
 }
 
+fn vec_string(old_vec: Vec<&str>) -> Vec<String> {
+    let mut new_vec: Vec<String> = Vec::new();
+    for v in old_vec {
+        new_vec.push(String::from(v));
+    }
+    new_vec
+}
+
+fn number_subparts() -> String {
+    let maybe = create_group(String::from("?"));
+    let mut three_digits = String::from(r"\d{1,3}");
+    let verse_parts = vec!["a", "b", "c", "d", "e"];
+    let sub_parts = vec!["α", "β", "γ", "δ"];
+    let mut part_group = regroup(vec_string(verse_parts));
+    part_group.push_str(&maybe(vec_string(sub_parts)));
+    three_digits.push_str(&maybe(vec![part_group]));
+    let range = r"(f{1,2}.?)?";
+    three_digits.push_str(range);
+
+    three_digits
+}
+
 
 pub fn regex_creator() -> String {
     let maybe = create_group(String::from("?"));
@@ -33,15 +55,16 @@ pub fn regex_creator() -> String {
     book_num = regroup(vec![book_num]);
 
     // Create Chapter Verse Address 
-    let mut address = regroup(vec![three_digits.clone(), roman_numerals.clone()]);
+    let chap_verse_num = number_subparts();
+    let mut address = regroup(vec![chap_verse_num.clone(), roman_numerals.clone()]);
     let seperators = String::from(r"[:,.]");
     address.push_str(&seperators);
     address.push_str(&maybe(vec![String::from(" ")]));
-    address.push_str(&three_digits);
+    address.push_str(&chap_verse_num);
     // end_range for the verses
     let mut end_range = regroup(vec![String::from("-"), String::from("–")]);
-    end_range.push_str(&three_digits);
-    end_range.push_str(&maybe(vec![seperators.clone(), three_digits.clone()]));
+    end_range.push_str(&chap_verse_num);
+    end_range.push_str(&maybe(vec![seperators.clone(), chap_verse_num.clone()]));
 
     // Putting the book number with address for a citation
     let mut citation = book_num;
@@ -54,7 +77,7 @@ pub fn regex_creator() -> String {
     // possible additional addresses 
     let mut additional_address = String::from(r"[:,;.\-]"); // Seperators
     additional_address.push_str(&maybe(vec![String::from(r"\s")]));
-    additional_address.push_str(&regroup(vec![three_digits.clone(), roman_numerals.clone()]));
+    additional_address.push_str(&regroup(vec![chap_verse_num.clone(), roman_numerals.clone()]));
     additional_address = some(vec![additional_address]);
 
     citation.push_str(&maybe(vec![additional_address]));
@@ -90,4 +113,5 @@ mod tests {
         let some = create_group(String::from("+"));
         assert_eq!(some(regex_frag), "(a|b|c)+");
     }
+
 }

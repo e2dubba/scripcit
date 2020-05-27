@@ -8,7 +8,9 @@ use std::error::Error;
 use structopt::StructOpt;
 
 mod scriptureregex;
-mod citation;
+#[path = "citation/roman_numerals.rs"] mod roman_numerals;
+#[path = "citation/book_linking.rs"] mod book_linking;
+#[path = "citation/address.rs"] mod address;
 
 // Extract all of the Scripture Citations out of A text
 #[derive(StructOpt)]
@@ -34,7 +36,7 @@ fn run(args: Cli) -> Result<(), Box<dyn Error>> {
     for mat in matches {
         let form_mat = mat.replace("\n", " ");
         println!("{}", form_mat);
-        if citation::roman_numerals::is_roman_numeral(mat) {
+        if roman_numerals::is_roman_numeral(mat) {
             println!("\tMatches!");
         }
     }
