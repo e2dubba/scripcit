@@ -74,6 +74,15 @@ fn split_keep(text: &str) -> Vec<&str> {
 
 }
 
+enum Address {
+    Book,
+    Chapter,
+    Verse,
+    Range,
+    Addition,
+    Divider,
+}
+
 pub fn scripture_parser(scripture_string: &str, library: book_linking::Library) -> Vec<ScriptureCitation> {
     let mut ranges = create_set_from_vec(vec![ "–", "–", "—"]);
     let mut dividers = create_set_from_vec(vec![":", ".", ","]);
@@ -95,32 +104,26 @@ pub fn scripture_parser(scripture_string: &str, library: book_linking::Library) 
     let mut address_vec = split_keep(&address);
 
     // let citation = ScriptureCitation::new(&script_book.unwrap(), &first_chap.unwrap());
-    let mut prev_element = "book";
+    let mut prev_element = Address.Book;
     let mut specific_divider: Option<&str> = None;
-    for element in address {
-        match prev_element {
-            "book"
-            "chapter"
-            "verse"
-            "addition"
-            "divider"
-            "range"
-
-    
+        
     for chunk in address_vec.chunks(3) {
-            match prev_element {
-                "book" => {
-                    chapter = chunk[0], 
-                    if ranges.contains(chunk[1]) {
-                        end_chap = chunk[2];
-                        push_citation
-                    }
-                    if dividers.contains(chunk[1]) {
-                        start_verse = chunk[2];
-                        specific_divider = chunk[1]
+        match prev_element {
+            "book" => {
+                chapter = chunk[0], 
+                if ranges.contains(chunk[1]) {
+                    end_chap = chunk[2];
+                    push_citation
+                }
+                if dividers.contains(chunk[1]) {
+                    start_verse = chunk[2];
+                    specific_divider = chunk[1]
+                }
 
-                _ => println!("Goodby"),
-            }
+            _ => println!("Goodby")
+
+        }
+    }
 
     }
 
