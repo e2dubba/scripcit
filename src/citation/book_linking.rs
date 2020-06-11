@@ -155,11 +155,12 @@ pub fn book_split(book_name: &str) -> (Option<i16>, String) {
         true => Some(roman_numerals::convert_to_numbers(value)),
     };
     for (i, chr) in book_name.chars().enumerate() {
-        if i > mat.end() {
+        if i >= mat.end() {
             name.push(chr);
         }
     }
-    (inum, name.to_lowercase()) 
+    name = String::from(name.to_lowercase().trim());
+    (inum, name) 
 }
 
 
@@ -214,4 +215,19 @@ mod tests {
         println!("{:?}", actual_return);
         assert_eq!(actual_return, expected_return);
     }
+
+    #[test]
+    fn kings_archive_search_test() {
+       let library = Library::create().unwrap();
+        let abbrev = "2Kng";
+        let mut expected_return: std::collections::HashSet<String> = std::collections::HashSet::new();
+        expected_return.insert(String::from("2 Kings"));
+        let actual_return = library.match_book(abbrev);
+        let (num, nab) = book_split(abbrev);
+        println!("{}, {}", num.unwrap(), nab);
+        println!("{:?}", actual_return);
+        assert_eq!(actual_return, expected_return);
+    }
+
+
 }
