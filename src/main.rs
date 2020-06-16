@@ -9,7 +9,6 @@ use structopt::StructOpt;
 
 mod scriptureregex;
 #[path = "citation/roman_numerals.rs"] mod roman_numerals;
-#[path = "citation/book_linking.rs"] mod book_linking;
 #[path = "citation/address.rs"] mod address;
 
 // Extract all of the Scripture Citations out of A text
@@ -32,12 +31,16 @@ fn main() {
 fn run(args: Cli) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(args.filename)?;
     let matches = find_scipture_in_text(&contents);
+    let library = address::book_linking::Library::create().unwrap();
 
     for mat in matches {
         let form_mat = mat.replace("\n", " ");
         println!("{}", form_mat);
-        if roman_numerals::is_roman_numeral(mat) {
-            println!("\tMatches!");
+        let mut scriptures = address::CitationList::new();
+        scriptures.insert(mat, &library);
+
+        for reference in scriptures.scrip_vec {
+            println!("\t{}", reference);
         }
     }
 

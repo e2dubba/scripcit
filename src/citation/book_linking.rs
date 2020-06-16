@@ -64,7 +64,6 @@ impl Library {
 
         for book in self.items.get(&first_char).unwrap() {
             if book.name_match(&other_book, &num) {
-                println!("{}", book.canonical_name);
                 possible_matches.insert(book.canonical_name.clone());
             }
         }
@@ -101,6 +100,9 @@ impl Book {
         for c in other_name.chars() {
             let book_c = book_iter.next();
             let value = book_c.as_ref().map(|n|  &c == n );
+            if value.is_none() {
+                return false
+            }
             if value.unwrap() == false {
                 return false
             }

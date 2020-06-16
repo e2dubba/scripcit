@@ -2,7 +2,7 @@
 use std::collections::HashSet;
 use regex::Regex;
 
-mod book_linking;
+pub mod book_linking;
 mod roman_numerals;
 
 #[derive(Debug)]
@@ -21,7 +21,7 @@ pub struct CitationList {
     dividers: HashSet<String>,
     additions: HashSet<String>,
     curr_citation: Option<ScriptureCitation>,
-    scrip_vec: Vec<ScriptureCitation>,
+    pub scrip_vec: Vec<ScriptureCitation>,
 
 }
 
@@ -31,6 +31,26 @@ enum CitationParts {
     Verse,
     EndChap,
     EndVerse,
+
+}
+
+impl std::fmt::Display for ScriptureCitation {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut printstring = self.book.clone();
+        if !self.start_chap.is_none() {
+            printstring = format!("{} {}", printstring, self.start_chap.unwrap());
+        }
+        if !self.start_verse.is_none() {
+            printstring = format!("{}: {}", printstring, self.start_verse.unwrap());
+        }
+        if !self.end_chap.is_none() {
+            printstring = format!("{} - {}", printstring, self.end_chap.unwrap());
+        }
+        if !self.end_verse.is_none() {
+            printstring = format!("{}: {}", printstring, self.end_verse.unwrap());
+        }
+        write!(f, "{}", printstring)
+    }
 
 }
 
@@ -183,12 +203,13 @@ impl CitationList {
                 println!("\x1b]93mDid you mean: {}?\x1b]0m", book)
             }
         };
+        if self.book.is_none() {
+            self.scrip_vec = vec![];
+            return 
+        }
 
         let address_vec: Vec<String> = split_keep(&cit_address);
-        println!("Address vec: {:?}", address_vec);
         for (num, element) in address_vec.iter().enumerate() {
-            println!("line 167: {:?}", prev_element);
-            println!("line 167: {:?}", element);
             match prev_element {
                 Address::Book => {
                     self.update_curr_citation(CitationParts::StartChap, element);
@@ -206,7 +227,6 @@ impl CitationList {
                     prev_element = Address::Verse;
                 },
                 Address::Range => {
-                    println!("Made it Here");
                     let next_element = if (num + 1) == address_vec.len() { None } else { Some(&address_vec[num + 1]) };
                     prev_element = self.handeling_ranges(next_element, element)
                 },
@@ -224,10 +244,8 @@ impl CitationList {
                 },
             }
         }
-        println!("line 199 {:?}", self.curr_citation);
         if !self.curr_citation.is_none() {
             self.scrip_vec.push(self.curr_citation.clone().unwrap());
-            println!("line 202 {:?}", self.scrip_vec);
         }
     }
     
