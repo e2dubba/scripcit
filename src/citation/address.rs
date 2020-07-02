@@ -70,17 +70,17 @@ impl ScriptureCitation {
 
 impl CitationList {
 
-    pub fn add(&mut self, scrip_cit: ScriptureCitation) {
-        self.scrip_vec.push(scrip_cit);
-    }
-
-    fn update_divider(&mut self, divider: &String) {
-        let mut divid: HashSet<_> = HashSet::new();
-        divid.insert(divider.to_owned());
-        self.additions.remove(divider);
-        self.dividers = divid;
-    }
-
+//    pub fn add(&mut self, scrip_cit: ScriptureCitation) {
+//        self.scrip_vec.push(scrip_cit);
+//    }
+//
+//    fn update_divider(&mut self, divider: &String) {
+//        let mut divid: HashSet<_> = HashSet::new();
+//        divid.insert(divider.to_owned());
+//        self.additions.remove(divider);
+//        self.dividers = divid;
+//    }
+//
     fn chapter_previous(&mut self, element: &String) -> Address  {
         if self.ranges.contains(element) {
             let prev_element = Address::ChapterRange;
@@ -193,14 +193,15 @@ impl CitationList {
         let mut prev_element = Address::Book;
 
         let (book_name, cit_address) = cleaned_book_abbr(scripture_string);
-        let scripture_books = library.match_book(&book_name);
-        let mut script_book = None;
-        for (num, book) in scripture_books.iter().enumerate() {
+        let mut scripture_books = library.match_book(&book_name);
+        // let mut script_book = None;
+
+        for (num, book) in scripture_books.drain().enumerate() {
             if num == 0 {
-                script_book = Some(book);
+                // script_book = Some(book);
                 self.book = Some(book.clone());
             } else {
-                println!("\x1b]93mDid you mean: {}?\x1b]0m", book)
+                println!("\x1b[93mDid you mean: {}?\x1b[0m", book)
             }
         };
         if self.book.is_none() {
@@ -385,5 +386,14 @@ mod tests {
         assert_eq!(should_vec[0].start_verse, scriptures.scrip_vec[0].start_verse);
     }
 
-
+    #[test]
+    fn test_isa() {
+        let test = "Isa. 3:1";
+        let mut scriptures = CitationList::new();
+        let library = book_linking::Library::create().unwrap();
+        scriptures.insert(test, &library);
+        let should = ScriptureCitation {book:String::from("Isaiah"), start_chap:Some(3), start_verse:Some(1), end_chap:None, end_verse:None};
+        println!("{:?}", scriptures.scrip_vec);
+        assert_eq!(should.book, scriptures.scrip_vec[0].book);
+    }
 }

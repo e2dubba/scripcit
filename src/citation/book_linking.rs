@@ -139,7 +139,7 @@ impl Book {
 
 pub fn book_split(book_name: &str) -> (Option<i16>, String) {
     lazy_static! {
-        static ref BOOK_RE: Regex = Regex::new(r"^(\d+|[ivIV]+)").unwrap();
+        static ref BOOK_RE: Regex = Regex::new(r"^((\d+ ?)|([ivIV]+ ))").unwrap();
     }
     let mut name = String::new();
     let inum: Option<i16> = None;
@@ -150,7 +150,7 @@ pub fn book_split(book_name: &str) -> (Option<i16>, String) {
     }
 
     let mat = mat_opt.unwrap();
-    let value = mat.as_str();
+    let value = mat.as_str().trim();
     let num = value.parse::<i16>();
     let inum = match num.is_err() {
         false => Some(num.unwrap()),
@@ -231,5 +231,15 @@ mod tests {
         assert_eq!(actual_return, expected_return);
     }
 
+    #[test]
+    fn isa_search() {
+        let library = Library::create().unwrap();
+        let abbrev = "Isa";
+        let mut expected_return: std::collections::HashSet<String> = std::collections::HashSet::new();
+        expected_return.insert(String::from("Isaiah"));
+
+        let actual_return = library.match_book(abbrev);
+        assert_eq!(actual_return, expected_return);
+    }
 
 }

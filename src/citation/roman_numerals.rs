@@ -12,7 +12,8 @@ pub fn is_roman_numeral(numeral: &str) -> bool {
 }
 
 pub fn convert_to_numbers(numeral: &str) -> i16 {
-    let numeral_parsed = roman::Roman::parse(numeral).unwrap();
+    let striped_numeral = numeral.trim();
+    let numeral_parsed = roman::Roman::parse(striped_numeral).unwrap();
     numeral_parsed.value()
 }
 
