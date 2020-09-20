@@ -19,7 +19,7 @@ pub struct CitationList {
     book: Option<String>,
     ranges: HashSet<String>,
     dividers: HashSet<String>,
-    additions: HashSet<String>,
+    // additions: HashSet<String>,
     curr_citation: Option<ScriptureCitation>,
     pub scrip_vec: Vec<ScriptureCitation>,
 
@@ -27,10 +27,10 @@ pub struct CitationList {
 
 enum CitationParts {
     StartChap,
-    StartVerse,
+    // StartVerse,
     Verse,
     EndChap,
-    EndVerse,
+    // EndVerse,
 
 }
 
@@ -77,7 +77,7 @@ impl CitationList {
 //    fn update_divider(&mut self, divider: &String) {
 //        let mut divid: HashSet<_> = HashSet::new();
 //        divid.insert(divider.to_owned());
-//        self.additions.remove(divider);
+//        // self.additions.remove(divider);
 //        self.dividers = divid;
 //    }
 //
@@ -106,21 +106,22 @@ impl CitationList {
 
 
     fn update_curr_citation(&mut self, citation_part: CitationParts, element: &String) {
-        let mut citation = match self.curr_citation.clone() {
-            Some(ScriptureCitation) => {
-                self.curr_citation.clone().unwrap()
-            }
-            None => {
-                let book = self.book.clone().unwrap();
-                ScriptureCitation::new(&book, None)
-            },
-        };
+        let mut citation = self.curr_citation.clone().unwrap_or(ScriptureCitation::new(&self.book.clone().unwrap(), None));
+        //let mut citation = match self.curr_citation.clone() {
+        //    Some(ScriptureCitation) => {
+        //        self.curr_citation.clone().unwrap()
+        //    }
+        //    None => {
+        //        let book = self.book.clone().unwrap();
+        //        ScriptureCitation::new(&book, None)
+        //    },
+        //};
 
         let num = convert_str_to_address_num(element);
 
         match citation_part {
             CitationParts::StartChap => { citation.start_chap = num; }, 
-            CitationParts::StartVerse => {citation.start_verse = num; }, 
+            // CitationParts::StartVerse => {citation.start_verse = num; }, 
             CitationParts::Verse => {
                 if citation.start_verse.is_none() { 
                     citation.start_verse = num 
@@ -129,12 +130,12 @@ impl CitationList {
                     citation.end_verse = num;
                 };},
             CitationParts::EndChap => { citation.end_chap = num; },
-            CitationParts::EndVerse => { 
-                if citation.end_chap.is_none() {
-                    citation.end_chap = citation.start_chap.clone();
-                }
-                citation.end_verse = num; 
-            },
+            //CitationParts::EndVerse => { 
+            //  if citation.end_chap.is_none() {
+            //      citation.end_chap = citation.start_chap.clone();
+            //  }
+            //  citation.end_verse = num; 
+            //},
         }
 
         self.curr_citation = Some(citation);
@@ -180,11 +181,12 @@ impl CitationList {
     pub fn new<'b>() -> CitationList  {
         let ranges: HashSet<String> = [ "-", "–", "–", "—"].iter().map(|x| String::from(*x)).collect();
         let dividers: HashSet<String> = [":", ".", ","].iter().map(|x| String::from(*x)).collect();
-        let additions: HashSet<String> = [";", ".", ","].iter().map(|x| String::from(*x)).collect(); 
+        // let additions: HashSet<String> = [";", ".", ","].iter().map(|x| String::from(*x)).collect(); 
  
         let scrip_vec: Vec<ScriptureCitation> = Vec::new();
 
-        CitationList {book: None, ranges: ranges, dividers: dividers, additions: additions, curr_citation: None, scrip_vec: scrip_vec}
+        // CitationList {book: None, ranges: ranges, dividers: dividers, additions: additions, curr_citation: None, scrip_vec: scrip_vec}
+        CitationList {book: None, ranges: ranges, dividers: dividers, curr_citation: None, scrip_vec: scrip_vec}
     }
 
     pub fn insert(&mut self,  scripture_string: &str, library: &book_linking::Library) {

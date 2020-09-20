@@ -142,7 +142,6 @@ pub fn book_split(book_name: &str) -> (Option<i16>, String) {
         static ref BOOK_RE: Regex = Regex::new(r"^((\d+ ?)|([ivIV]+ ))").unwrap();
     }
     let mut name = String::new();
-    let inum: Option<i16> = None;
     let mat_opt = BOOK_RE.find(book_name);
     if mat_opt.is_none() {
         let name = book_name.trim().to_lowercase();
@@ -152,7 +151,7 @@ pub fn book_split(book_name: &str) -> (Option<i16>, String) {
     let mat = mat_opt.unwrap();
     let value = mat.as_str().trim();
     let num = value.parse::<i16>();
-    let inum = match num.is_err() {
+    let inum: Option<i16>  = match num.is_err() {
         false => Some(num.unwrap()),
         true => Some(roman_numerals::convert_to_numbers(value)),
     };
