@@ -8,8 +8,7 @@ use std::io::{BufReader, BufRead};
 use std::error::Error;
 use std::fs::File;
 
-#[path = "./roman_numerals/lib.rs"] mod roman_numerals;
-
+#[path = "./roman_numerals/lib.rs"] mod roman_numerals; 
 /// The basic structure of the book, if it has a number, the sorting character
 /// The canonical name, and its id. 
 pub struct Book {
