@@ -12,7 +12,7 @@ if the text has the following citation: `1 Cor. 4:3, 5, 6-7; 5:1-4`, the results
 	1 Corinthians 5: 1 - 5: 4
 ```
 
-The structs for these formats could easily be wrapped up in TEI, or someother form of Markup.
+The structs for these formats could easily be wrapped up in TEI, or some other form of Markup.
 
 ## Installing and Running
 
