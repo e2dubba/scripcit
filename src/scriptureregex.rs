@@ -1,6 +1,11 @@
+/// Creates a string that can be compiled in regex for matching scripture 
+/// citations in what ever combination they might occur. 
 /// 
-///
+/// This is borken down into a series of functions for combining the regular 
+/// expresion elements in groups with options.
 use itertools::Itertools;
+
+/// For all the options given, they are grouped together as options 
 fn regroup(options: Vec<String>) -> String {
     let mut combined_group: String = "(".to_owned();
     let grouped: String = options.into_iter().intersperse(String::from("|")).collect();
@@ -9,6 +14,8 @@ fn regroup(options: Vec<String>) -> String {
     combined_group
 }
 
+/// Create group returns a funcion that can be repurposed for different 
+/// regular expression purposes 
 fn create_group(addition: String) -> Box<dyn Fn(Vec<String>) -> String> {
     Box::new(move |x| {
         let mut combined_group = regroup(x);
@@ -17,6 +24,7 @@ fn create_group(addition: String) -> Box<dyn Fn(Vec<String>) -> String> {
     })
 }
 
+/// Turns a Vec<&str> to a Vec<String>
 fn vec_string(old_vec: Vec<&str>) -> Vec<String> {
     let mut new_vec: Vec<String> = Vec::new();
     for v in old_vec {
@@ -25,6 +33,7 @@ fn vec_string(old_vec: Vec<&str>) -> Vec<String> {
     new_vec
 }
 
+/// Creating options for the different number parts that a verse can have
 fn number_subparts() -> String {
     let maybe = create_group(String::from("?"));
     let mut three_digits = String::from(r"\d{1,3}");
@@ -40,6 +49,8 @@ fn number_subparts() -> String {
 }
 
 
+/// The following function employees the different above commands to create the final 
+/// regular expresion for a complete regex for scripture
 pub fn regex_creator() -> String {
     let maybe = create_group(String::from("?"));
     let some = create_group(String::from("+"));

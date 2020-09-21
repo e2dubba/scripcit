@@ -1,3 +1,6 @@
+//! This creates a data structure from the data/books.csv 
+//! which is then checked against which ever book is found 
+//! in the regex. 
 use std::collections::{HashMap, HashSet};
 use std::cmp::Ordering;
 use regex::Regex;
@@ -5,8 +8,10 @@ use std::io::{BufReader, BufRead};
 use std::error::Error;
 use std::fs::File;
 
-#[path = "./roman_numerals.rs"] mod roman_numerals;
+#[path = "./roman_numerals/lib.rs"] mod roman_numerals;
 
+/// The basic structure of the book, if it has a number, the sorting character
+/// The canonical name, and its id. 
 pub struct Book {
     pub num: Option<i16>,
     pub sort_on: char,
@@ -15,12 +20,15 @@ pub struct Book {
     pub idx: HashMap<char, Vec<usize>>,
 }
 
+/// All of the structs of the books are added to the Library.
 pub struct Library {
     pub items: HashMap<char, Vec<Book>>,
 }
 
 
+/// The library struct has several methods associatted with it.
 impl Library {
+    /// This function creates the library from the data set 
     pub fn create() -> Result<Library, Box<dyn Error>> {
         let mut library_collection = Library::new();
         let file= File::open("data/books.csv")?;
@@ -41,10 +49,12 @@ impl Library {
         Ok(library_collection)
     }
 
+    /// a new library is a new initialization of the data set.
     pub fn new() -> Library {
         Library { items: HashMap::new() }
     }
 
+    /// Add, can add a book to the library struct
     pub fn add(&mut self, book: Book) {
         if !&self.items.contains_key(&book.sort_on) {
             self.items.insert(book.sort_on, Vec::new());
@@ -54,6 +64,21 @@ impl Library {
         }
     }
 
+    /// The primary function of the Library is to match books against it. 
+    /// This function matches a given string against the Hashmap of the library.
+    /// 
+    /// # Examples
+    /// ``` 
+    /// // create the library
+    /// let library = Library::create().unwrap();
+    /// // abbreviation to test
+    /// let abbrev = "ii Sam";
+    /// let mut expected_return: std::collections::HashSet<String> = std::collections::HashSet::new();
+    /// // the match returns an array, insert the expected match
+    /// expected_return.insert(String::from("2 Samuel"));
+    /// let actual_return = library.match_book(abbrev);
+    /// assert_eq!(actual_return, expected_return);
+    /// ```
     pub fn match_book(&self, book_to_match: &str) -> HashSet<String> {
         let (num, other_book) = book_split(book_to_match);
         let mut possible_matches = HashSet::new();
@@ -72,6 +97,9 @@ impl Library {
 }
 
 impl Book {
+    /// Initiate a new Book struct. The name is any form of the name that can be seen 
+    /// in the texts. In our data set this includes names in German, French, Spanish, and English, 
+    /// as well as common abbreviations.
     pub fn new(name_str: &str, canonical_name: &str) -> Book {
         // let mut idx: HashMap<char, Vec<usize>> = HashMap::new();
         let (num, name) = book_split(name_str);
@@ -95,6 +123,8 @@ impl Book {
         }
     }
 
+    /// This funciton tries to find the match of the name based on the exact abbreaviation
+    /// For example  `Num` will match `Numbers`
     fn ordered_name_match(&self, other_name: &str) -> bool {
         let mut book_iter = self.name.chars();
         for c in other_name.chars() {
@@ -110,6 +140,9 @@ impl Book {
         true
     }
 
+    /// name match will first look for an ordered match, and then look for a match of all 
+    /// subsequent matches. So `Mrk` will match with `Mark` even though one of the letters 
+    /// is missing
     pub fn name_match(&self, other_name: &str, other_num: &Option<i16>) -> bool {
         if other_num != &self.num {
             return false
@@ -137,6 +170,16 @@ impl Book {
     }
 }
 
+/// this will split book names between the number and the name of the book
+/// 
+/// # Examples 
+/// 
+/// ```
+/// let book = "ii Samuel";
+/// let (num, name) = book_split(book);
+/// assert_eq!(num, Some(2));
+/// assert_eq!(name, "samuel");
+/// ```
 pub fn book_split(book_name: &str) -> (Option<i16>, String) {
     lazy_static! {
         static ref BOOK_RE: Regex = Regex::new(r"^((\d+ ?)|([ivIV]+ ))").unwrap();

@@ -1,12 +1,19 @@
+//! Tying book matching and numbers into a vector of Citation ranges
+//! 
+//! 
+//! This code breings together the book linkings and the citation to create a formated ciatation struct
+//! 
 
 use std::collections::HashSet;
 use regex::Regex;
 
 pub mod book_linking;
-mod roman_numerals;
+// mod roman_numerals;
+#[path = "./roman_numerals/lib.rs"] mod roman_numerals;
 
 #[derive(Debug)]
 #[derive(Clone)]
+/// A struct for the organization of a scripture citation: book, start chapter, start verse, end chapter end verse.
 pub struct ScriptureCitation {
     book: String, 
     start_chap: Option<i16>,
@@ -15,6 +22,8 @@ pub struct ScriptureCitation {
     end_verse: Option<i16>,
 }
 
+/// This is the struct for the whole citation list. 
+/// This struct will cover even 1 Cor. 4:3, 5, 6-7; 5:1-4
 pub struct CitationList {
     book: Option<String>,
     ranges: HashSet<String>,
@@ -25,6 +34,7 @@ pub struct CitationList {
 
 }
 
+/// This enum lists the diferent options a verse part can have.
 enum CitationParts {
     StartChap,
     // StartVerse,
@@ -35,6 +45,7 @@ enum CitationParts {
 }
 
 impl std::fmt::Display for ScriptureCitation {
+    /// Formats the Scripture citation into a pretty printed string
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut printstring = self.book.clone();
         if !self.start_chap.is_none() {
@@ -55,7 +66,7 @@ impl std::fmt::Display for ScriptureCitation {
 }
 
 impl ScriptureCitation {
-    
+    /// Initiate a new Scripture Citation Struct
     pub fn new(name: &String, start_chap: Option<i16>) -> ScriptureCitation {
         ScriptureCitation { 
             book: name.to_owned(), 
@@ -69,18 +80,7 @@ impl ScriptureCitation {
 }
 
 impl CitationList {
-
-//    pub fn add(&mut self, scrip_cit: ScriptureCitation) {
-//        self.scrip_vec.push(scrip_cit);
-//    }
-//
-//    fn update_divider(&mut self, divider: &String) {
-//        let mut divid: HashSet<_> = HashSet::new();
-//        divid.insert(divider.to_owned());
-//        // self.additions.remove(divider);
-//        self.dividers = divid;
-//    }
-//
+    /// Returns the type of Address element that was previous to the current element
     fn chapter_previous(&mut self, element: &String) -> Address  {
         if self.ranges.contains(element) {
             let prev_element = Address::ChapterRange;
@@ -105,18 +105,14 @@ impl CitationList {
     }
 
 
+    /// Updates the current citation based on the current place in the element. 
+    /// The purpose of this function is to read the parts of the citation in order, and make 
+    /// smart decisions about what could the next possible option be. Both looking forward 
+    /// And looking backward. 
+    /// 
     fn update_curr_citation(&mut self, citation_part: CitationParts, element: &String) {
         let mut citation = self.curr_citation.clone().unwrap_or(ScriptureCitation::new(&self.book.clone().unwrap(), None));
-        //let mut citation = match self.curr_citation.clone() {
-        //    Some(ScriptureCitation) => {
-        //        self.curr_citation.clone().unwrap()
-        //    }
-        //    None => {
-        //        let book = self.book.clone().unwrap();
-        //        ScriptureCitation::new(&book, None)
-        //    },
-        //};
-
+       
         let num = convert_str_to_address_num(element);
 
         match citation_part {
@@ -129,18 +125,13 @@ impl CitationList {
                     citation.end_chap = citation.start_chap.clone();
                     citation.end_verse = num;
                 };},
-            CitationParts::EndChap => { citation.end_chap = num; },
-            //CitationParts::EndVerse => { 
-            //  if citation.end_chap.is_none() {
-            //      citation.end_chap = citation.start_chap.clone();
-            //  }
-            //  citation.end_verse = num; 
-            //},
+            CitationParts::EndChap => { citation.end_chap = num; }
         }
 
         self.curr_citation = Some(citation);
     }
 
+    /// Tests for a range or divider element in the citation
     fn handeling_ranges(&mut self, next_element: Option<&String>, curr_element: &String) -> Address {
         let curr_citation = &self.curr_citation.clone().map(|x| x).unwrap();
         let end = String::from("End");
@@ -157,6 +148,7 @@ impl CitationList {
         Address::Verse
     }
 
+    /// Handles the addition of an element, e.g. 3 and 5. 
     fn handeling_additions(&mut self, next_element: Option<&String>, curr_element: &String) -> Address {
         let prev_citation = &self.curr_citation.clone().map(|x| x).unwrap();
         self.scrip_vec.push(prev_citation.clone());
@@ -178,6 +170,7 @@ impl CitationList {
         Address::Verse
     }
 
+    /// Create a new CitationList object
     pub fn new<'b>() -> CitationList  {
         let ranges: HashSet<String> = [ "-", "–", "–", "—"].iter().map(|x| String::from(*x)).collect();
         let dividers: HashSet<String> = [":", ".", ","].iter().map(|x| String::from(*x)).collect();
@@ -189,8 +182,27 @@ impl CitationList {
         CitationList {book: None, ranges: ranges, dividers: dividers, curr_citation: None, scrip_vec: scrip_vec}
     }
 
+    /// Takes a raw scripture citation as the scripture_string and a library, and returns a 
+    /// Scripture Citation vector
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// let test = "II Sam. iv. 3-4";
+    /// let mut scriptures = CitationList::new();
+    /// let library = book_linking::Library::create().unwrap();
+    /// scriptures.insert(test, &library);
+    /// let should_value = ScriptureCitation {book:String::from("2 Samuel"), start_chap:Some(4), start_verse:Some(3), end_chap:Some(4), end_verse:Some(4)};
+    /// let script = scriptures.scrip_vec[0].clone();
+    /// println!("Should: {:?}", should_value);
+    /// println!("Script: {:?}", script);
+    /// assert_eq!(should_value.book, script.book);
+    /// assert_eq!(should_value.start_chap, script.start_chap);
+    /// assert_eq!(should_value.start_verse, script.start_verse);
+    /// assert_eq!(should_value.end_chap, script.end_chap);
+    /// assert_eq!(should_value.end_verse, script.end_verse);
+    /// ```
     pub fn insert(&mut self,  scripture_string: &str, library: &book_linking::Library) {
-
         // let citation = ScriptureCitation::new(&script_book.unwrap(), &first_chap.unwrap());
         let mut prev_element = Address::Book;
 
@@ -255,7 +267,16 @@ impl CitationList {
 }
 
 
-
+/// Returns just the book part. 
+/// 
+/// # Examples 
+/// 
+/// ```
+/// let scrip_string = "II Sam. iv. 3, 2";
+/// let mat = grab_book_abbr(scrip_string);
+/// let book = mat.unwrap().as_str();
+/// assert_eq!(book, "ii sam.")
+/// ```
 fn grab_book_abbr(scripture_string: &str) -> Option<regex::Match> {
     lazy_static! {
         static ref SCRIPT_ABBREVIATION_REGEX: Regex = Regex::new(r"^(I{1,3}V?|i{1,3}v?|\d{1,3})? ?(\w+).?").unwrap();
@@ -264,6 +285,17 @@ fn grab_book_abbr(scripture_string: &str) -> Option<regex::Match> {
 
 }
 
+/// Converts the book number as a string to an i16 number that can be used in 
+/// the scripture citation struct. 
+/// 
+/// # Examples 
+/// 
+/// ```
+/// let num: i16 = 4;
+/// let value = String::from("iv");
+/// let new_value = convert_str_to_address_num(&value);
+/// assert_eq!(num, new_value.unwrap());
+/// ```
 fn convert_str_to_address_num(num: &String) -> Option<i16> {
     let is_roman = roman_numerals::is_roman_numeral(num);
     let i16_num = match is_roman {
@@ -273,6 +305,14 @@ fn convert_str_to_address_num(num: &String) -> Option<i16> {
     i16_num
 }
 
+/// Return the tuple of the full book name, pluse the book address as a string
+/// 
+/// # Examples 
+/// ```
+/// let scrip_string = "II Sam. iv. 3, 2";
+/// let (book_name, address) = cleaned_book_abbr(scrip_string);
+/// assert_eq!((book_name, address), (String::from("II Sam"), String::from(" iv. 3, 2")));
+/// ```
 fn cleaned_book_abbr(scripture_string: &str) -> (String, String) {
     let mat = grab_book_abbr(scripture_string).unwrap();
     let book = mat.as_str().replace(".", "");
@@ -281,7 +321,18 @@ fn cleaned_book_abbr(scripture_string: &str) -> (String, String) {
     (book, address)
 }
 
-
+/// Split the verse and chapter reference into a vector of different elements, 
+/// numbers and dividers, ranges or additions. This makes it easier to iterate over 
+/// the numbers and remember what comes before and after
+///
+/// # Examples 
+/// 
+/// ```
+/// let text = "vi. 1; vii. 3";
+/// let res_vec = split_keep(text);
+/// println!("{:?}", res_vec);
+/// assert_eq!(vec!["vi", ".", "1", ";", "vii", ".", "3"], res_vec);
+/// ```
 fn split_keep(text: &str) -> Vec<String> {
     lazy_static! {
         static ref SPLIT_RE: Regex = Regex::new(r"(-|–|–|—|:|\.|,|;|,| ) ?").unwrap();
@@ -307,6 +358,7 @@ fn split_keep(text: &str) -> Vec<String> {
     result
 }
 
+/// The different elements that define an address string.
 #[derive(Debug)]
 enum Address {
     Book,

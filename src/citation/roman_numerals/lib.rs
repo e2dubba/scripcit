@@ -1,6 +1,20 @@
+//! This library creates a coule of simple functions that either test for legitimate roman numeral,
+//! or convert a legitimate numeral to a i16 value. This is done largely through the roman numerals library, 
+//! but wraps some convienent functions 
+//! 
+
 use numerals::roman;
 use regex::Regex;
 
+/// This function tests to see if the fucntion is a roman numeral. Using regex. 
+/// 
+/// # Examples 
+/// 
+/// ```
+/// let upper_numeral = "VII";
+/// 
+/// assert!(scripcit::citation::roman_numerals::is_roman_numeral(upper_numeral));
+/// ```
 pub fn is_roman_numeral(numeral: &str) -> bool {
     lazy_static! {
         static ref NUMERAL_RE: Regex = regex::Regex::new(
@@ -11,6 +25,14 @@ pub fn is_roman_numeral(numeral: &str) -> bool {
     NUMERAL_RE.is_match(numeral)
 }
 
+/// This function converts roman numerals to i16 numbers, striping white space
+/// 
+/// # Examples 
+/// 
+/// ```
+/// let roman_numeral = "CMXC";
+/// assert_eq!(scripcit::citation::roman_numerals::convert_to_numbers(&roman_numeral), 990);
+/// ```
 pub fn convert_to_numbers(numeral: &str) -> i16 {
     let striped_numeral = numeral.trim();
     let numeral_parsed = roman::Roman::parse(striped_numeral).unwrap();
