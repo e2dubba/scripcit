@@ -26,3 +26,4 @@ Things that still need to be finished off.
 - [ ] Validate the number range to be certain it isn't impossible (like Exodus 50:234, etc)
 - [ ] Prepackage the data Structures (the book library), so that the script can be run in any directory 
 - [ ] Tweak and test the scripture regular expression scripts so that it works more broadly (especially older German, French and Spanish material)
+- [ ] Ability to ingest PDFs
