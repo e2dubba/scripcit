@@ -1,5 +1,5 @@
 [package]
-name = "refmatch"
+name = "scripcit"
 version = "0.1.0"
 authors = ["e2dubba <svirgilgoodwin@gmail.com>"]
 edition = "2018"
